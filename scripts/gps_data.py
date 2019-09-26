@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-'''gps_data.py is a ROS node that publishes parsed GPS data for use by other ROS nodes using a custom message
+'''gps_data.py is a ROS node that publishes parsed GPS data for use by other ROS nodes 
 
 Date Last Updated: 26/9/19 by Josh Cherubino
 
@@ -9,9 +9,10 @@ Purpose: Publish GPS data so that other ROS nodes relying on GPS data can operat
 Published topics:
     /gps/gps_data
 
-Data contained within custom message:
-    -
+Data Format:
+##Must determine whether to use sensor_msgs/NavSatFix message or create a custom one##
 
+GPS data formats obtained from "gpsinformation.org/dale/nmea.htm"
 '''
 
 import rospy
@@ -26,7 +27,7 @@ def gps_data():
     rate = rospy.Rate(10)
     msg = GPSData()
     while not rospy.is_shutdown():
-        #Insert message data here once custom message created
+        #insert message data here
         pub.publish(msg)
         rate.sleep()
 
