@@ -33,6 +33,11 @@ class GPSInfo:
 	def parseGPS(self, data):
 		if data[0:6] == "$GPGGA":
 			s =  data.split(",")
+			checksum_result = self.compute_checksum(data)
+			if not checksum_result:
+				print "Checksum failed"
+				return
+
 			if s[7] ==  '0':
 				print "no satellite data available"
 				return
@@ -80,6 +85,34 @@ class GPSInfo:
 		min_ = head[-2:]
 		return float(deg) + float(min_ + "." + tail)/60
 
+	def compute_checksum(self,data):
+		"""compute a char wise XOR checksum of the data and compare it to the hex value after the * in the data string"""
+		try:
+			#take a substring between $ and *
+			s1 = data.split('$')[1]
+			s1 = s1.split('*')[0]
+		except:
+			#if we can't find a $ or a * the data is corrupt; return false
+			return False
+
+		#compute char wise checksum
+		checksum = 0
+		for char in s1:
+			checksum ^= ord(char)
+		#convert to hex for comparison with checksum value in str
+		checksum = hex(checksum)
+		#split the data string and access the checksum hex 
+		#[1:] to skip over *
+		checksum_str = "0x" + data.split(',')[14][1:]
+		checksum_int = int(checksum_str, 16)
+		hex_checksum = hex(checksum_int)
+		if checksum != hex_checksum:
+			return False
+		else:
+			return True
+
+		
+
 	def __str__(self):
 		retval = "Latitude: " + str(self.latitude) + ", "
 		retval += "Longitude: " + str(self.longitude) + ", "
@@ -87,13 +120,7 @@ class GPSInfo:
 		retval += "Time(UTC): " + str(self.time) + "\n"
 		return retval
 
-
-			
 	
-
-
-		
-		
 
 def gps_data():
 	'''function to create a ros node and publish GPS sensor data'''
