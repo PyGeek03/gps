@@ -35,11 +35,9 @@ class GPSInfo:
 			s =  data.split(",")
 			checksum_result = self.compute_checksum(data)
 			if not checksum_result:
-				print "Checksum failed"
 				return
 
 			if s[7] ==  '0':
-				print "no satellite data available"
 				return
 			time_str = s[1][0:2] + ":" + s[1][2:4] + ":" + s[1][4:6]
 			
@@ -73,9 +71,8 @@ class GPSInfo:
 			try:
 				self.time = datetime.strptime(time_str, "%H:%M:%S")
 			except:
-				pass
-		else:
-			print 'no run : ( '
+				self.time = datetime.strptime("00:00:00", "%H:%M:%S")
+	
 
 	def decode(self, coord):
 		v = coord.split(".")
@@ -136,7 +133,7 @@ def gps_data():
 	ser = serial.Serial()
 	try:
 		ser.baudrate = 9600
-		ser.port = '/dev/ttyS0'
+		ser.port = '/dev/serial0'
 		#specify timeout so serial doesnt hang
 		ser.timeout = 1
 		ser.open()
@@ -144,24 +141,19 @@ def gps_data():
 		pass
 
 	while not rospy.is_shutdown():
-		try:
-			data = ser.readline()
-		except: 
-			#####TESTING####
-			#for testing, fill with good data to test publisher node
-			data = "$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47"
-			rate.sleep()
-			#####END TESTING####
-		gps_info = GPSInfo()
-		gps_info.parseGPS(data)
+		
+		data = ser.readline()
+		if data[0:6] == "$GPGGA":
+			gps_info = GPSInfo()
+			gps_info.parseGPS(data)
 
-		msg.latitude = gps_info.latitude
-		msg.longitude = gps_info.longitude
-		msg.time = gps_info.time
+			msg.latitude = gps_info.latitude
+			msg.longitude = gps_info.longitude
+			msg.time = gps_info.time
 
-		rospy.loginfo(str(msg))
+			rospy.loginfo(str(msg))
 
-		pub.publish(msg)
+			pub.publish(msg)
 
 
 
