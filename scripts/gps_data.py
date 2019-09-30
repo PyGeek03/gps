@@ -20,6 +20,7 @@ GPS data formats obtained from "gpsinformation.org/dale/nmea.htm"
 import rospy
 import serial
 from datetime import datetime
+import time
 #add custom message import statement
 from gps.msg import GPSData
 
@@ -28,8 +29,9 @@ class GPSInfo:
 		self.latitude = None
 		self.longitude = None
 		self.altitude = None
-		self.time = None
-		
+		self.seconds_since_epoch = time.mktime(time.localtime())
+		self.time = rospy.Time.from_sec(self.seconds_since_epoch)
+
 	def parseGPS(self, data):
 		if data[0:6] == "$GPGGA":
 			s =  data.split(",")
@@ -39,7 +41,7 @@ class GPSInfo:
 
 			if s[7] ==  '0':
 				return
-			time_str = s[1][0:2] + ":" + s[1][2:4] + ":" + s[1][4:6]
+			
 			
 			try:
 				lat = self.decode(s[2])
@@ -68,11 +70,12 @@ class GPSInfo:
 			
 			self.latitude = lat
 			self.longitude = lon
-			try:
-				self.time = datetime.strptime(time_str, "%H:%M:%S")
-			except:
-				self.time = datetime.strptime("00:00:00", "%H:%M:%S")
-	
+			if s[1][0:2] != "":
+				time_str = s[1][0:2] + ":" + s[1][2:4] + ":" + s[1][4:6]
+				self.seconds_since_epoch = time.mktime(time.strptime(time_str, "%H:%M:%S"))
+				self.time = rospy.Time.from_sec(self.seconds_since_epoch) 
+				
+				
 
 	def decode(self, coord):
 		v = coord.split(".")
@@ -150,7 +153,7 @@ def gps_data():
 			msg.latitude = gps_info.latitude
 			msg.longitude = gps_info.longitude
 			msg.time = gps_info.time
-
+			rospy
 			rospy.loginfo(str(msg))
 
 			pub.publish(msg)
