@@ -26,11 +26,10 @@ from gps.msg import GPSData
 
 class GPSInfo:
 	def	__init__(self):
-		self.latitude = None
-		self.longitude = None
-		self.altitude = None
-		self.seconds_since_epoch = time.mktime(time.localtime())
-		self.time = rospy.Time.from_sec(self.seconds_since_epoch)
+		self.latitude = 0.0
+		self.longitude = 0.0
+		self.altitude = 0.0
+		self.time = rospy.Time()
 
 	def parseGPS(self, data):
 		if data[0:6] == "$GPGGA":
@@ -41,8 +40,6 @@ class GPSInfo:
 
 			if s[7] ==  '0':
 				return
-			
-			
 			try:
 				lat = self.decode(s[2])
 				
@@ -51,7 +48,7 @@ class GPSInfo:
 				lat_mult = lat_dirs[s[3]]
 				lat *= lat_mult
 			except:
-				lat = None
+				lat = 0.0
 			try:
 				lon = self.decode(s[4])	
 				#multiply by 1 or -1 depending on E or W
@@ -60,20 +57,19 @@ class GPSInfo:
 				lon *= lon_mult
 				
 			except:
-				lon = None
+				lon = 0.0
 			try: 
 				alt = s[9] + " m"
 				sat = s[7]
 			except:
-				alt = None
-				sat = None
+				alt = 0.0
+				sat = 0.0
 			
 			self.latitude = lat
 			self.longitude = lon
 			if s[1][0:2] != "":
-				time_str = s[1][0:2] + ":" + s[1][2:4] + ":" + s[1][4:6]
-				self.seconds_since_epoch = time.mktime(time.strptime(time_str, "%H:%M:%S"))
-				self.time = rospy.Time.from_sec(self.seconds_since_epoch) 
+				time_secs = 60*60*float(s[1][0:2]) + 60*float(s[1][2:4])  + float(s[1][4:6])
+				self.time = rospy.Time(secs=time_secs) 
 				
 				
 
@@ -144,8 +140,13 @@ def gps_data():
 		pass
 
 	while not rospy.is_shutdown():
-		
-		data = ser.readline()
+		try:
+			data = ser.readline()
+			
+		except:
+			#test that it's working 
+			data = "$GPGGA,,,S,,E,1,05,2.90,111.9,M,-1.8,M,,*55"
+			rate.sleep()
 		if data[0:6] == "$GPGGA":
 			gps_info = GPSInfo()
 			gps_info.parseGPS(data)
@@ -153,10 +154,10 @@ def gps_data():
 			msg.latitude = gps_info.latitude
 			msg.longitude = gps_info.longitude
 			msg.time = gps_info.time
-			rospy
 			rospy.loginfo(str(msg))
 
 			pub.publish(msg)
+
 
 
 
