@@ -89,18 +89,13 @@ class GPSInfo:
         checksum = 0
         for char in s1:
             checksum ^= ord(char)
-        # Convert to hex for comparison with checksum value in str
-        checksum = hex(checksum)
-        # Split the data string and access the checksum hex
-        # [1:] to skip over *
-        try:
-            checksum_str = "0x" + data.split(',')[-1][1:]
-        except:
-            return False
-        checksum_int = int(checksum_str, 16)
-        hex_checksum = hex(checksum_int)
+        # Convert to hex for comparison with source checksum in data
+        computed_checksum = hex(checksum)
 
-        if checksum != hex_checksum:
+        # Split the data string and access the source checksum
+        # if source checksum is not available, source_checksum would be "0x"
+        source_checksum = "0x" + data.partition('*')[2]
+        if computed_checksum != source_checksum:
             return False
         else:
             return True
