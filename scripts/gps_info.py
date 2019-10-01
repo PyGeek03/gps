@@ -5,8 +5,6 @@ Date Last Updated: 30/9/19 by Marcel Masque
 
 Purpose: Decode, parse, compute checksum and store GPS data in a class.
 """
-
-
 import rospy
 
 
@@ -26,7 +24,7 @@ class GPSInfo:
         data {str} -- String containing comma separated GPS data
 
         """
-        if data[0:6] == "$GPGGA":
+        if data[0:6].startswith("$GPGGA"):
             s = data.split(",")
             checksum_result = self.computeChecksum(data)
             if not checksum_result:
