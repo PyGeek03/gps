@@ -78,11 +78,10 @@ class GPSInfo:
         Returns:
         {bool} -- True if checksum is correct, False otherwise
         """
-        try:
-            # Take a substring between $ and *
-            s1 = data.split('$')[1]
-            s1 = s1.split('*')[0]
-        except:
+        s1 = data.partition('$')[2].partition('*')[0]
+        # returns an empty string if data does not contain '$' or '*'
+
+        if s1 == '':
             # If we can't find a $ or a * the data is corrupt; return false
             return False
 
