@@ -36,26 +36,30 @@ class GPSInfo:
                 lat = self.decode(s[2])
                 # Multiply by 1 or -1 depending on N or S
                 lat_dirs = {"N": 1, "S": -1}
-                lat_mult = lat_dirs[s[3]]
-                self.latitude = lat*lat_mult
+                lat_dir = s[3]
+                self.latitude = lat * lat_dirs[lat_dir]
 
                 lon = self.decode(s[4])
                 # Multiply by 1 or -1 depending on E or W
                 lon_dirs = {"E": 1, "W": -1}
-                lon_mult = lon_dirs[s[5]]
-                self.longitude = lon*lon_mult
+                lon_dir = s[5]
+                self.longitude = lon * lon_dirs[lon_dir]
             except:
                 pass
 
             if s[1][0:2] != "":
-                time_secs = 60*60*float(s[1][0:2]) + 60*float(s[1][2:4]) + float(s[1][4:6])
+                hour = float(s[1][0:2])
+                minute = float(s[1][2:4])
+                second = float(s[1][4:6])
+                time_secs = 60*60*hour + 60*minute + second
                 self.time = rospy.Time(secs=time_secs)
 
     def decode(self, coord):
         """decode a string coordinate in decimal degrees minutes seconds
 
         Argument:
-        coord {str} -- A partial coordinate (latitude or longitude) in decimal degrees min seconds
+        coord {str} -- A partial coordinate (latitude or longitude) in decimal
+        degrees min seconds
 
         Returns:
         {float} -- A partial coordinate in decimal degrees minutes
@@ -64,8 +68,9 @@ class GPSInfo:
         head = v[0]
         tail = v[1]
         deg = head[0:-2]
-        min_ = head[-2:]
-        return float(deg) + float(min_ + "." + tail)/60
+        min = head[-2:]
+        sec = tail
+        return float(deg) + float(min + "." + sec)/60
 
     def computeChecksum(self, data):
         """Compute a char wise XOR checksum of the data, and compare it to the
