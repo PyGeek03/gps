@@ -44,9 +44,9 @@ def gpsData():
         ser.timeout = 1
         ser.open()
     except IOError:
+        ####TESTING####
         # If sensor not available,
         # Test using sample data
-        ####TESTING####
         data_file = open("sample_data_30092019.txt", "r")
         ####END TESTING####
 
@@ -60,16 +60,15 @@ def gpsData():
             rate.sleep()
             ####END TESTING####
 
-        if data[0:6] == "$GPGGA":
-            gps_info = GPSInfo()
-            gps_info.parseGPS(data)
+        gps_info = GPSInfo()
+        gps_info.parseGPS(data)
 
-            msg.latitude = gps_info.latitude
-            msg.longitude = gps_info.longitude
-            msg.time = gps_info.time
-            rospy.loginfo(str(msg))
+        msg.latitude = gps_info.latitude
+        msg.longitude = gps_info.longitude
+        msg.time = gps_info.time
+        rospy.loginfo(str(msg))
 
-            pub.publish(msg)
+        pub.publish(msg)
 
 
 if __name__ == "__main__":
