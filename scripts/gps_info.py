@@ -24,14 +24,14 @@ class GPSInfo:
         data {str} -- String containing comma separated GPS data
 
         """
-        if data[0:6].startswith("$GPGGA"):
-            s = data.split(",")
-            checksum_result = self.computeChecksum(data)
-            if not checksum_result:
+        if data.startswith("$GPGGA"):
+            if not self.computeChecksum(data):
                 return
 
+            s = data.split(",")
             if s[7] == '0':
                 return
+
             try:
                 lat = self.decode(s[2])
                 # Multiply by 1 or -1 depending on N or S
