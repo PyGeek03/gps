@@ -43,23 +43,23 @@ def gpsData():
         # Specify timeout so serial doesnt hang
         ser.timeout = 1
         ser.open()
-    except:
-        pass
-
-    ####TESTING####
-    data_file = open("sample_data_30092019.txt", "r")
-    ####END TESTING####
+    except IOError:
+        # If sensor not available,
+        # Test using sample data
+        ####TESTING####
+        data_file = open("sample_data_30092019.txt", "r")
+        ####END TESTING####
 
     while not rospy.is_shutdown():
         try:
             data = ser.readline()
 
-        except:
-            # Test that it's working using sample_data
+        except IOError:
             #####TESTING####
             data = data_file.readline()
             rate.sleep()
             ####END TESTING####
+
         if data[0:6] == "$GPGGA":
             gps_info = GPSInfo()
             gps_info.parseGPS(data)
